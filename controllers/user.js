@@ -53,12 +53,7 @@ exports.postAuth = async (req, res) => {
     if(currentUser) {
       let isPass = await bcrypt.compare(req.body.password, currentUser.password);
       if(isPass){
-        const token = jwt.sign({
-          userId: currentUser._id,
-          email: currentUser.email,
-        }, process.env.JWT_SECRET, {
-          expiresIn: `30d`
-        });
+        const token = currentUser.generateJwtToken();
         req.session.name = currentUser.name;
         req.session.jwtToken = token;
         return res.status(200).redirect(`/`);
@@ -93,8 +88,9 @@ exports.postSignup = async (req, res) => {
           email: req.body.email,
         });
         await newUser.save();
+        const token = newUser.generateJwtToken();
+        req.session.jwtToken = token;
         req.session.name = newUser.name;
-        req.session.userId = newUser._id;
         return res.status(201).redirect(`/`);
       } else {
         res.status(401).json({

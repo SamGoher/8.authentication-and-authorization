@@ -1,5 +1,6 @@
 // application requirements
 const mongoose = require(`mongoose`);
+const jwt = require(`jsonwebtoken`);
 
 // user schema
 const userSchema = new mongoose.Schema({
@@ -23,6 +24,17 @@ const userSchema = new mongoose.Schema({
   resetToken: String,
   resetTokenExpiration: Date
 });
+
+// gerating jwt token for user
+userSchema.methods.generateJwtToken = function () {
+  const token = jwt.sign({
+    userId: this._id,
+    email: this.email
+  }, process.env.JWT_SECRET, {
+    expiresIn: `30d`
+  });
+  return token;
+};
 
 // user model
 const User = mongoose.model(`users`, userSchema);
